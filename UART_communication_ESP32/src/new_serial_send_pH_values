@@ -1,0 +1,35 @@
+#include <Arduino.h>
+#include <HardwareSerial.h>
+#include <sstream>
+#include <string>
+// HardwareSerial SerialPort2(2); // use UART0
+// HardwareSerial SerialPort2(0); // use UART0
+void setup() {
+  Serial.begin(9600);
+  //SerialPort2.begin(9600, SERIAL_8N1, 16, 17);
+  //Serial2.begin(9600,SERIAL_8N1);
+  //Serial.begin(9600, SERIAL_8N1, 16, 17);
+}
+
+void loop() {
+  /**
+  Sample test:
+  SerialPort.print(1);
+  delay(5000);
+  SerialPort.print(0);
+  delay(5000); 
+  **/
+
+    int pH_1 = 0;
+    int pH_2 = 4;
+    int pH_3 = 7;
+    int ph_4 = 14;
+    string IntToString (int a)
+    {
+        stringstream temp;
+        temp<<a;
+        return temp.str();
+    }
+    string my_string = "'" + IntToString(pH_1) + "','" + IntToString(ph_2) + "','" + IntToString(pH_3) + "','" + IntToString(pH_4)+ "'";
+    Serial.writeline(my_string);
+}

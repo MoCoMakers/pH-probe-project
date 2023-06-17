@@ -1,0 +1,32 @@
+#include <Arduino.h>
+#include <HardwareSerial.h>
+
+//HardwareSerial SerialPort2(2); // use UART0
+//HardwareSerial SerialPort2(0); // use UART0
+void setup() {
+  Serial.begin(9600);
+  //SerialPort2.begin(9600, SERIAL_8N1, 16, 17);
+  //Serial2.begin(9600,SERIAL_8N1);
+  //Serial.begin(9600, SERIAL_8N1, 16, 17);
+}
+
+void loop() {
+  /**
+  Sample test:
+  SerialPort.print(1);
+  delay(5000);
+  SerialPort.print(0);
+  delay(5000); 
+  **/
+
+  if (Serial2.available()) 
+  {  
+    String command = Serial2.readStringUntil('\n');
+    Serial.println(command);
+    if (command == "ping"){
+      Serial2.println("pong");
+    }
+  } else {
+    // Serial.println("not available");
+  }
+}
