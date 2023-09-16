@@ -19,11 +19,19 @@ class SerialPlot:
         self.__max_len = max_len
         self.__num_of_sensors = num_of_sensors
 
+        """
+        self.__ser = serial.Serial(str_port, baud_rate)
+        self.__num_of_sensors = num_of_sensors
+        """
+        
         if not ser_instance:
+            # If ser_instance is false, then create serial instance or connection 
             self.__ser = serial.Serial(str_port, baud_rate)
         else:
+            # If ser_instance is true, then it is an instance and is no longer a boolean, but an object
+            # In Python, objects and non-null strings  
             self.__ser = ser_instance
-        self.__ser.flushInput()
+        self.__ser.flushInput() # e.g. serial.Serial.flushInstance()
 
         try:
             self.__ser = serial.Serial(str_port, baud_rate)
@@ -32,7 +40,7 @@ class SerialPlot:
         except:
             # print("AttributeError: 'SerialPlot' object has no attribute '_SerialPlot__ser")
             print("{} not found".format(str_port))
-
+        
         self.__data = [deque([0.0] * max_len) for num in range(num_of_sensors)]
         self.__lock = True
         self.cnt = 0
@@ -50,6 +58,8 @@ class SerialPlot:
             buf.appendleft(val)
 
     def __add(self, data):
+        print("Data is")
+        print(data)
         assert (len(data) == self.__num_of_sensors)
         for (rcv_data, deque) in zip(data, self.__data):
             self.__add_to_buf(deque, rcv_data)
@@ -60,15 +70,24 @@ class SerialPlot:
             # print("self.__ser:", self.__ser)
             while self.__ser.in_waiting > 0:
                 line = self.__ser.readline()
+                print("LIne is")
+                print(line)
+                print(type(line))
                 if p == True:
                     print(line.strip().split(b','))
                 data = [float(val) for val in line.strip().split(b',')]
+                
+                print("data (list comprehension): ", data)
+                # raise Exception("myMessage")
+                
+                # data = data[:2]
                 self.__add(data)
             return data
         except KeyboardInterrupt:
             print("exitiing")
 
     def update_raw_data(self, frame, sub_plot):
+        #print("sub_plot: ": sub_plot)
         self.__get_serial_data(False)
         min_average = np.inf
         min_plot = None
@@ -166,7 +185,13 @@ class Draw:
     def __init__(self, serial_port, baud, num_of_sensors, fft_length, ser_instance=False):
         fft_len = fft_length
         if not ser_instance:
-            sp = SerialPlot("/dev/" + str(serial_port), baud, 25, num_of_sensors,
+            try: 
+                print("Oops. I am in here.")
+                sp = SerialPlot("/dev/" + str(serial_port), baud, 25, num_of_sensors,
+                            fft_length)
+            except:
+                print("I am here!") 
+                sp = SerialPlot("" + str(serial_port), baud, 25, num_of_sensors,
                             fft_length)
         else:
             sp = SerialPlot("", baud, 25, num_of_sensors,
@@ -179,7 +204,7 @@ class Draw:
         rawd_color = ['r', 'g', 'b', 'c']
         for c, a in zip(rawd_color, self.rawd_ax.reshape(4, )):
             a.set_xlim([0, 25])
-            a.set_ylim([0, 50])
+            a.set_ylim([0, 15])
             b, = a.plot([], [], color=c)
             self.rawd_plot.append(b)
         fft_label = ['fft', 'sum']
