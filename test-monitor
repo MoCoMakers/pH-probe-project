@@ -157,6 +157,7 @@ class SerialPlot:
             else:
                 cnt = 0
             self.__lock = True
+
     
     def do_update_analyse(self, sp, is_debug):
         # Want to return sp.update_analyse if it makes sense
@@ -252,7 +253,7 @@ class Draw:
         rawd_color = ['r', 'g', 'b', 'c']
         for c, a in zip(rawd_color, self.rawd_ax.reshape(4, )):
             a.set_xlim([0, 25])
-            a.set_ylim([0, 15]) 
+            a.set_ylim([0, 15])
             b, = a.plot([], [], color=c)
             self.rawd_plot.append(b)
         fft_label = ['fft', 'sum']
@@ -271,13 +272,15 @@ class Draw:
             'FFT len={} & Average'.format(fft_len))
         self.rawd_fig.canvas.manager.set_window_title('Raw Data')
 
-        # Display of 4 Plots
+        # Display of 4 Graphs
+        
         anim = animation.FuncAnimation(self.rawd_fig, self.do_update_raw_data(sp, is_debug),
                                        fargs=((self.rawd_plot,
                                                self.rawd_ax.reshape(4, )),),
                                        interval=1)
         
-        # Display of 2 Plots
+        
+        # Display of 2 graphs
         anim1 = animation.FuncAnimation(self.fft_fig, sp.do_update_analyse(sp, is_debug),
                                         fargs=((self.fft_plot, self.fft_ax),),
                                         interval=1)
@@ -294,7 +297,18 @@ class Draw:
             return raw_output_data
         else:
             return update_raw_data_for_debug
-         
+        
+    def do_update_analyse(self, sp, is_debug):
+        # Want to return sp.update_analyse if it makes sense
+        # Otherwise, return fake raw data
+        if not is_debug:
+            raw_output_data = sp.update_analyse
+            print("raw_output_data: ", raw_output_data)
+            print("type of raw_output_data: ", type(raw_output_data))
+            return raw_output_data
+        else:
+            return update_analyse_for_debug
+            
 def main():
     try:
         serial_port = sys.argv[1]
@@ -318,9 +332,10 @@ def update_raw_data_for_debug(frame, sub_plot):
         #print("sub_plot: ": sub_plot)
         min_average = np.inf
         min_plot = None
+        #__max_len = 256
         num_of_sensors = 4
         __data = [deque([0.0] * max_len) for num in range(num_of_sensors)]
-        __max_len = 256
+        max_len = 256
         # sub_plot[0] is a list of values; in this case, representing the plot variable
         # subplot[1] is a list of values; in this case, representing the axes variable
         # self.__data is a list of raw data of the same length as there are a number of plots
@@ -334,6 +349,30 @@ def update_raw_data_for_debug(frame, sub_plot):
                 min_plot = plot
         min_plot.set_color('r')
         #self.__lock = False
-                   
+
+"""
+def update_analyse_for_debug(self, frame, sub_plot):
+        #if not self.__lock:
+        
+        #tim = time.time() - self.ti
+        #self.ti = time.time()
+        
+        tim = 0.004
+        sum_array = self.update_sum_plot(sub_plot[0][1], sub_plot[1][1])
+        threshold, max_harmonic_freq = self.update_fft_plot(sub_plot[0][0],
+                                                            sub_plot[1][0],
+                                                            sum_array,
+                                                            self.cnt,
+                                                            self.time)
+        if threshold > 80:
+            c = tim * max_harmonic_freq
+            self.cnt += c
+            self.time = self.time + tim
+            logger.debug(c)
+        else:
+            cnt = 0
+            #self.__lock = True
+"""
+            
 if __name__ == '__main__':
     main()

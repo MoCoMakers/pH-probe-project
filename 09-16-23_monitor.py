@@ -6,7 +6,6 @@ import logging
 from matplotlib.mlab import specgram
 from scipy.fftpack import fft
 from collections import deque
-import os
 import time
 import sys
 
@@ -92,11 +91,6 @@ class SerialPlot:
         self.__get_serial_data(False)
         min_average = np.inf
         min_plot = None
-        # sub_plot[0] is a list of values; in this case, representing the plot variable
-        # subplot[1] is a list of values; in this case, representing the axes variable
-        # self.__data is a list of raw data of the same length as there are a number of plots
-        print("self.__data: ", self.__data)
-        print("self.__data: ", self.__data)
         for plot, ax, d in zip(sub_plot[0], sub_plot[1], self.__data):
             plot.set_data(range(self.__max_len), d)
             plot.set_color('b')
@@ -139,10 +133,7 @@ class SerialPlot:
     def update_analyse(self, frame, sub_plot):
         if not self.__lock:
             tim = time.time() - self.ti
-            print("tim: ", tim)
             self.ti = time.time()
-            print("self.ti", self.ti)
-            #os._exit(1)
             sum_array = self.update_sum_plot(sub_plot[0][1], sub_plot[1][1])
             threshold, max_harmonic_freq = self.update_fft_plot(sub_plot[0][0],
                                                                 sub_plot[1][0],
@@ -157,39 +148,7 @@ class SerialPlot:
             else:
                 cnt = 0
             self.__lock = True
-    
-    def do_update_analyse(self, sp, is_debug):
-        # Want to return sp.update_analyse if it makes sense
-        # Otherwise, return fake raw data
-        if not is_debug:
-            raw_output_data = sp.update_analyse
-            print("raw_output_data: ", raw_output_data)
-            print("type of raw_output_data: ", type(raw_output_data))
-            return raw_output_data
-        else:
-            return self.update_analyse_for_debug
-        
-    def update_analyse_for_debug(self, frame, sub_plot):
-        #if not self.__lock:
-        
-        #tim = time.time() - self.ti
-        tim = 0.004
-        #self.ti = time.time()
-        sum_array = self.update_sum_plot(sub_plot[0][1], sub_plot[1][1])
-        threshold, max_harmonic_freq = self.update_fft_plot(sub_plot[0][0],
-                                                            sub_plot[1][0],
-                                                            sum_array,
-                                                            self.cnt,
-                                                            self.time)
-        if threshold > 80:
-            c = tim * max_harmonic_freq
-            self.cnt += c
-            self.time = self.time + tim
-            logger.debug(c)
-        else:
-            cnt = 0
-            #self.__lock = True
-                      
+
     def get_sum_buffered_data(self):
         sum = []
         for i in range(self.__max_len):
@@ -223,27 +182,20 @@ class SerialPlot:
 
 class Draw:
 
-    def __init__(self, serial_port, baud, num_of_sensors, fft_length, ser_instance=False, is_debug=False):
+    def __init__(self, serial_port, baud, num_of_sensors, fft_length, ser_instance=False):
         fft_len = fft_length
-
-        if not is_debug:
-            
-            if not ser_instance:
-                try: 
-                    print("Oops. I am in here.")
-                    sp = SerialPlot("/dev/" + str(serial_port), baud, 25, num_of_sensors,
-                                fft_length)
-                except:
-                    print("I am here!") 
-                    sp = SerialPlot("" + str(serial_port), baud, 25, num_of_sensors,
-                                fft_length)
-            else:
-                sp = SerialPlot("", baud, 25, num_of_sensors,
-                                fft_length, ser_instance)
+        if not ser_instance:
+            try: 
+                print("Oops. I am in here.")
+                sp = SerialPlot("/dev/" + str(serial_port), baud, 25, num_of_sensors,
+                            fft_length)
+            except:
+                print("I am here!") 
+                sp = SerialPlot("" + str(serial_port), baud, 25, num_of_sensors,
+                            fft_length)
         else:
-            # Defining the sp variable b/c sp will not exist if there is no physical device connected
-            sp = None
-
+            sp = SerialPlot("", baud, 25, num_of_sensors,
+                            fft_length, ser_instance)
         # define fig
         self.rawd_fig, self.rawd_ax = plt.subplots(2, 2)
         self.fft_fig, self.fft_ax = plt.subplots(2, 1)
@@ -252,7 +204,7 @@ class Draw:
         rawd_color = ['r', 'g', 'b', 'c']
         for c, a in zip(rawd_color, self.rawd_ax.reshape(4, )):
             a.set_xlim([0, 25])
-            a.set_ylim([0, 15]) 
+            a.set_ylim([0, 15])
             b, = a.plot([], [], color=c)
             self.rawd_plot.append(b)
         fft_label = ['fft', 'sum']
@@ -270,70 +222,25 @@ class Draw:
         self.fft_fig.canvas.manager.set_window_title(
             'FFT len={} & Average'.format(fft_len))
         self.rawd_fig.canvas.manager.set_window_title('Raw Data')
-
-        # Display of 4 Plots
-        anim = animation.FuncAnimation(self.rawd_fig, self.do_update_raw_data(sp, is_debug),
+        anim = animation.FuncAnimation(self.rawd_fig, sp.update_raw_data,
                                        fargs=((self.rawd_plot,
                                                self.rawd_ax.reshape(4, )),),
                                        interval=1)
-        
-        # Display of 2 Plots
-        anim1 = animation.FuncAnimation(self.fft_fig, sp.do_update_analyse(sp, is_debug),
+        """
+        anim1 = animation.FuncAnimation(self.fft_fig, sp.update_analyse,
                                         fargs=((self.fft_plot, self.fft_ax),),
                                         interval=1)
-        
+        """
         plt.show()
 
-    def do_update_raw_data(self, sp, is_debug):
-        # Want to return sp.update_raw_data if it makes sense
-        # Otherwise, return fake raw data
-        if not is_debug:
-            raw_output_data = sp.update_raw_data
-            print("raw_output_data: ", raw_output_data)
-            print("type of raw_output_data: ", type(raw_output_data))
-            return raw_output_data
-        else:
-            return update_raw_data_for_debug
-         
+
 def main():
     try:
-        serial_port = sys.argv[1]
-        baud = int(sys.argv[2])
-        fft_length = int(sys.argv[3])
-        num_of_sensors = 4
-        is_debug = sys.argv[4]
-
-        if is_debug.lower() == "true":
-            is_debug = True
-        else:
-            is_debug = False
-
-        d = Draw(serial_port=serial_port, baud=baud,
-                 fft_length=fft_length, num_of_sensors=num_of_sensors, is_debug=is_debug)
+        d = Draw(serial_port=sys.argv[1], baud=int(sys.argv[2]),
+                 fft_length=int(sys.argv[3]), num_of_sensors=4)
     except KeyboardInterrupt:
         exit()
 
-# the purpose is to execute same thing with fake raw data
-def update_raw_data_for_debug(frame, sub_plot):
-        #print("sub_plot: ": sub_plot)
-        min_average = np.inf
-        min_plot = None
-        num_of_sensors = 4
-        __data = [deque([0.0] * max_len) for num in range(num_of_sensors)]
-        __max_len = 256
-        # sub_plot[0] is a list of values; in this case, representing the plot variable
-        # subplot[1] is a list of values; in this case, representing the axes variable
-        # self.__data is a list of raw data of the same length as there are a number of plots
-        for plot, ax, d in zip(sub_plot[0], sub_plot[1], __data):
-            plot.set_data(range(__max_len), d)
-            plot.set_color('b')
-            ave = np.average(d)
-            ax.set_title("ave={:.2f}".format(ave))
-            if (ave < min_average):
-                min_average = ave
-                min_plot = plot
-        min_plot.set_color('r')
-        #self.__lock = False
-                   
+
 if __name__ == '__main__':
     main()
