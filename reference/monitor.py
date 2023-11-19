@@ -13,7 +13,6 @@ import sys
 logger = logging.getLogger("logger.plot")
 logger.setLevel(logging.WARN)
 
-
 class SerialPlot:
 
     def __init__(self, str_port, baud_rate, max_len, num_of_sensors, fft_len, ser_instance=False):
@@ -199,7 +198,7 @@ class SerialPlot:
             sum.append(s)
         return sum
 
-    def get_average(self):
+    def get_average(selhf):
         return np.average(self.get_sum_buffered_data())
 
     def get_spectrogram(self, data):
