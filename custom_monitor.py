@@ -14,7 +14,6 @@ def main(args):
     except KeyboardInterrupt:
         pass
 
-# python monitor.py COM3 9600 256 true
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='GUI for pH probe project')
     parser.add_argument('--port', default='COM3')
