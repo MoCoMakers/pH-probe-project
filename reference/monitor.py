@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import logging
 from matplotlib.mlab import specgram
+# FuncAnimation class allows you to make animations by repeatedly calling my function
+from matplotlib.animation import FuncAnimation
 from scipy.fftpack import fft
 from collections import deque
 import os
@@ -300,7 +302,7 @@ def main():
         baud = int(sys.argv[2])
         fft_length = int(sys.argv[3])
         num_of_sensors = 4
-        is_debug = sys.argv[4]
+        is_debug = sys.argv[]
 
         if is_debug.lower() == "true":
             is_debug = True

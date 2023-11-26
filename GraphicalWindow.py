@@ -10,7 +10,8 @@ class GraphicalWindow():
         fig, ax = plt.subplots()
         xdata, ydata = [], []
         ln, = ax.plot([], [], 'ro')
-        self.ydata = [0,2,4,8,10,12,14]
+        # ydata is intialized w/ integers
+        self.ydata = [0.0,2.0,4.0,8.0,10.0,12.0,14.0]
         self.dataConnection = dataConnection
 
         def init():
@@ -24,6 +25,7 @@ class GraphicalWindow():
             #ydata.append(np.sin(frame))
             ydata = self.ydata
             ydata = ydata[1:]
+            # actually using ydata to get latest value
             ydata.append(self.dataConnection.getLatestValue())
             self.ydata = ydata
             ln.set_data(xdata, ydata)
