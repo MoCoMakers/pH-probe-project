@@ -17,7 +17,8 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='GUI for pH probe project')
     parser.add_argument('--port', default='COM3')
-    parser.add_argument('--baud_rate', default='9600') 
+    parser.add_argument('--baud_rate', default='115200') 
+    # a way of accepting true for the value
     parser.add_argument('--debug_flag', action='store_true')
     args = parser.parse_args()
     print("args", args.baud_rate)

@@ -9,18 +9,24 @@ class GraphicalWindow():
         #pass in serial connection object
         fig, ax = plt.subplots()
         xdata, ydata = [], []
-        ln, = ax.plot([], [], 'ro')
+        self.data_width = 300
         # ydata is intialized w/ integers
-        self.ydata = [0.0,2.0,4.0,8.0,10.0,12.0,14.0]
+        self.ydata = [0]*self.data_width
+
+        for x in range(0,self.data_width):
+            xdata.append(x)
+        
+        ln, = ax.plot(xdata, self.ydata, 'ro')
+        
         self.dataConnection = dataConnection
 
         def init():
-            ax.set_xlim(0, 2*np.pi)
+            ax.set_xlim(0, self.data_width)
             ax.set_ylim(0, 14)
             return ln,
 
         def update(i):
-            xdata=[0,1,2,3,4,5,6]
+            
             #xdata.append(frame)
             #ydata.append(np.sin(frame))
             ydata = self.ydata
@@ -32,5 +38,5 @@ class GraphicalWindow():
             return ln,
 
         ani = FuncAnimation(fig, update, frames=np.linspace(0, 2*np.pi, 128),
-                            init_func=init, blit=True)
+                            init_func=init, blit=True, interval=10)
         plt.show()
